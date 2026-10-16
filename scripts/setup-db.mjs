@@ -26,7 +26,7 @@ const NEW = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 async function run() {
   if (reset) {
     console.log('Jadvallar o\'chirilmoqda...');
-    await sql(`DROP TABLE IF EXISTS stock_movements, order_items, orders, variants, products, categories, images, banners, settings CASCADE`);
+    await sql(`DROP TABLE IF EXISTS stock_movements, order_items, orders, variants, products, categories, images, banners, stories, settings CASCADE`);
   }
   for (const stmt of SCHEMA.split(';').map((s) => s.trim()).filter(Boolean)) await sql(stmt);
   console.log('Sxema tayyor.');

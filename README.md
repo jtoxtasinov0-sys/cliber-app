@@ -6,7 +6,7 @@ O'zbekiston bo'ylab yetkazib berish, **faqat karta orqali to'lov** (Uzcard / Hum
 ## Imkoniyatlar
 
 **Mini app** (`/`)
-- Bosh sahifa: maxsus takliflar karuseli, kategoriyalar, eng ko'p sotilganlar, yangi kolleksiya
+- Bosh sahifa: istoriyalar (Instagram uslubida, to'liq ekranli ko'ruvchi), maxsus takliflar karuseli, kategoriyalar, eng ko'p sotilganlar, yangi kolleksiya
 - Katalog: qidiruv, kategoriya, saralash, "faqat mavjud" filtri
 - Mahsulot: rasm galereyasi, o'lcham tanlash (ombor qoldig'i bo'yicha), "kam qoldi" ogohlantirishi
 - Savat, sevimlilar, buyurtmalar tarixi va holati (timeline)
@@ -19,6 +19,7 @@ O'zbekiston bo'ylab yetkazib berish, **faqat karta orqali to'lov** (Uzcard / Hum
 - Buyurtmalar: chekni ko'rish, to'lovni tasdiqlash / rad etish, holat (yig'ilmoqda → yo'lda → yetkazildi), trek raqam, bekor qilish (mahsulot omborga qaytadi), CSV
 - Mahsulotlar: qo'shish/tahrirlash, rasm yuklash, o'lchamlar (SKU, tannarx, min. qoldiq), chegirma narxi
 - **Ombor**: qoldiqlar jadvali, kirim (yetkazuvchi, tannarx), chiqim (brak/yo'qotish), inventarizatsiya, har bir pozitsiya tarixi, sotuv/tannarx qiymati, 30 kunlik sotuv, CSV
+- **Istoriyalar**: bir nechta slayd (rasm + matn + mahsulot/kategoriya/havola tugmasi), muqova, ko'rinish muddati (24 soat / 3 kun / doimiy), tartib, yoqish/o'chirish, ko'rishlar soni
 - Kategoriyalar, bannerlar, mijozlar, sozlamalar (to'lov kartalari, yetkazish narxlari, do'kon ma'lumotlari, Telegram bot)
 
 ## Vercel'ga joylash

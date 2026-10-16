@@ -113,6 +113,7 @@ const PAGES = [
   ['stock', 'Ombor', 'box'],
   ['categories', 'Kategoriyalar', 'grid'],
   ['banners', 'Bannerlar', 'image'],
+  ['stories', 'Istoriyalar', 'stories'],
   ['customers', 'Mijozlar', 'users'],
   ['settings', 'Sozlamalar', 'settings'],
 ];
@@ -154,7 +155,7 @@ function route() {
   $modal.innerHTML = '';
   const [name, qs] = (location.hash.replace('#/', '') || 'dashboard').split('?');
   renderNav();
-  const pages = { dashboard: pDashboard, orders: pOrders, products: pProducts, stock: pStock, categories: pCategories, banners: pBanners, customers: pCustomers, settings: pSettings };
+  const pages = { dashboard: pDashboard, orders: pOrders, products: pProducts, stock: pStock, categories: pCategories, banners: pBanners, stories: pStories, customers: pCustomers, settings: pSettings };
   const main = document.getElementById('main');
   main.innerHTML = `<div class="skel"></div><div class="skel" style="margin-top:14px;height:300px"></div>`;
   (pages[name] || pDashboard)(main, new URLSearchParams(qs || '')).catch((e) => {
@@ -805,6 +806,171 @@ async function pBanners(main) {
   };
   main.querySelector('#nb').onclick = () => open(null);
   main.querySelectorAll('[data-edit]').forEach((x) => (x.onclick = () => open(list.find((b) => b.id === Number(x.dataset.edit)))));
+}
+
+/* ================= Istoriyalar ================= */
+const STORY_LINKS = { none: "Tugmasiz", product: 'Mahsulotga', category: 'Kategoriyaga', url: 'Tashqi havola' };
+const uploadImage = async (file, side = 1400) =>
+  (await api('admin/upload', { method: 'POST', body: { image: await compressImage(file, side) } })).url;
+
+function storyState(s) {
+  if (!s.is_active) return `<span class="pill">O'chiq</span>`;
+  if (!s.expires_at) return '<span class="pill green">Faol · doimiy</span>';
+  const h = Math.ceil((new Date(s.expires_at) - Date.now()) / 3600e3);
+  if (h <= 0) return '<span class="pill red">Muddati tugagan</span>';
+  return `<span class="pill amber">${h > 48 ? `${Math.ceil(h / 24)} kun` : `${h} soat`} qoldi</span>`;
+}
+
+async function pStories(main) {
+  const [list, cats, prods] = await Promise.all([api('admin/stories'), loadCats(), api('admin/products')]);
+  main.innerHTML = `<div class="topline"><h1>Istoriyalar<small>Bosh sahifadagi doira shaklidagi istoriyalar. Har biriga bir nechta slayd (rasm, matn va tugma) qo'shish mumkin.</small></h1>
+    <button class="btn btn-gold" id="nst">${icon('plus', 'sm')} Yangi istoriya</button></div>
+    ${list.length ? `<div class="st-grid">${list.map((s) => `<div class="st-card">
+      <div class="st-cov${s.is_active ? '' : ' off'}"><img src="${esc(s.cover || s.slides[0]?.image || '/img/brand/logo_512.png')}" alt="" /></div>
+      <b>${esc(s.title)}</b>
+      <div class="muted st-meta">${s.slides.length} slayd · ${icon('eye', 'xs')} ${fmt(s.views)} · #${s.sort}</div>
+      ${storyState(s)}
+      <div class="st-act"><label class="toggle" title="Faol"><input type="checkbox" data-act="${s.id}" ${s.is_active ? 'checked' : ''} /><span class="sw"></span></label>
+        <button class="btn btn-dark btn-sm" data-edit="${s.id}">${icon('edit', 'xs')} Tahrirlash</button></div></div>`).join('')}</div>`
+    : `<div class="panel st-empty">${icon('stories')}<b>Hali istoriyalar yo'q</b><p class="muted">Yangi kolleksiya, chegirmalar yoki do'kon hayotidan rasmlar qo'shing — mijozlar ularni ilovaning bosh sahifasida ko'radi.</p></div>`}`;
+
+  const open = (s) => {
+    const slides = (s?.slides || []).map((x) => ({ ...x }));
+    let cover = s?.cover || '';
+    const expOpts = [['0', 'Doimiy'], ['24', '24 soat'], ['72', '3 kun'], ['168', '7 kun'], ['720', '30 kun']];
+    const { box, close } = modal(`${mHead(s ? 'Istoriyani tahrirlash' : 'Yangi istoriya')}<form class="modal-b" id="sf">
+      <div class="fgrid">
+        <label class="field"><span>Nomi * (doira ostida ko'rinadi)</span><input class="input" name="title" maxlength="40" value="${esc(s?.title || '')}" placeholder="Masalan: Yangi kolleksiya" /></label>
+        <label class="field"><span>Ko'rinish muddati</span><select class="input" name="expires">
+          ${s?.expires_at ? `<option value="keep" selected>${new Date(s.expires_at) > new Date() ? `${fmtDate(s.expires_at)} gacha` : 'Muddati tugagan'}</option>` : ''}
+          ${expOpts.map(([v, t]) => `<option value="${v}" ${s && !s.expires_at && v === '0' ? 'selected' : ''}>${t}</option>`).join('')}</select></label>
+        <label class="field"><span>Tartib</span><input class="input" name="sort" type="number" value="${s?.sort ?? list.length}" /></label>
+      </div>
+      <div class="sec-t">Muqova <small>— ixtiyoriy, bo'lmasa 1-slayd rasmi olinadi</small></div>
+      <div class="imgs" id="cov"></div>
+      <div class="sec-t">Slaydlar</div>
+      <div class="slds" id="sl"></div>
+      <label class="toggle" style="margin-top:18px"><input type="checkbox" name="is_active" ${s?.is_active !== false ? 'checked' : ''} /><span class="sw"></span>Faol (ilovada ko'rinadi)</label>
+    </form><div class="modal-f">${s ? `<button class="btn btn-red" id="sdel">${icon('trash', 'sm')}</button><span style="flex:1"></span>` : ''}<button class="btn btn-dark" data-close>Bekor</button><button class="btn btn-gold" id="ssave">Saqlash</button></div>`);
+
+    const cov = box.querySelector('#cov');
+    const drawCover = () => {
+      cov.innerHTML = (cover ? `<div class="im round"><img src="${esc(cover)}" alt="" /><div class="im-a"><span></span><button type="button" data-cx aria-label="O'chirish">${icon('x', 'xs')}</button></div></div>` : '') +
+        `<label class="add round">${icon('camera')}${cover ? 'Almashtirish' : 'Yuklash'}<input type="file" accept="image/*" hidden /></label>`;
+      cov.querySelector('input').onchange = async (e) => {
+        try { cover = await uploadImage(e.target.files[0], 600); drawCover(); } catch (err) { toast(err.message, true); }
+      };
+      cov.querySelector('[data-cx]')?.addEventListener('click', () => { cover = ''; drawCover(); });
+    };
+    drawCover();
+
+    const sl = box.querySelector('#sl');
+    const linkField = (x) => {
+      if (x.link_type === 'product') return `<label class="field"><span>Mahsulot</span><select class="input" data-k="link_value">${prods.map((p) => `<option value="${p.id}" ${String(p.id) === String(x.link_value) ? 'selected' : ''}>${esc(p.name)}${p.is_active ? '' : " (o'chiq)"}</option>`).join('')}</select></label>`;
+      if (x.link_type === 'category') return `<label class="field"><span>Kategoriya</span><select class="input" data-k="link_value">${cats.map((c) => `<option value="${c.id}" ${String(c.id) === String(x.link_value) ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select></label>`;
+      if (x.link_type === 'url') return `<label class="field"><span>Havola</span><input class="input" data-k="link_value" value="${esc(x.link_value || '')}" placeholder="https://t.me/climbershahrixon" /></label>`;
+      return '';
+    };
+    const drawSlides = () => {
+      sl.innerHTML = slides.map((x, i) => `<div class="sld" data-i="${i}">
+        <div class="sld-img"><img src="${esc(x.image)}" alt="" /><span>${i + 1}</span></div>
+        <div class="sld-f">
+          <textarea class="input" data-k="text" rows="2" maxlength="200" placeholder="Matn (ixtiyoriy) — rasm ustida ko'rinadi">${esc(x.text || '')}</textarea>
+          <div class="sld-g">
+            <label class="field"><span>Tugma</span><select class="input" data-k="link_type">${Object.entries(STORY_LINKS).map(([k, t]) => `<option value="${k}" ${(x.link_type || 'none') === k ? 'selected' : ''}>${t}</option>`).join('')}</select></label>
+            ${linkField(x)}
+            ${x.link_type && x.link_type !== 'none' ? `<label class="field"><span>Tugma matni</span><input class="input" data-k="button" maxlength="30" value="${esc(x.button || '')}" placeholder="Ko'rish" /></label>` : ''}
+          </div>
+          <div class="sld-a">
+            <button type="button" class="btn btn-dark btn-icon" data-mv="-1" ${i ? '' : 'disabled'} aria-label="Yuqoriga">${icon('up', 'xs')}</button>
+            <button type="button" class="btn btn-dark btn-icon" data-mv="1" ${i < slides.length - 1 ? '' : 'disabled'} aria-label="Pastga">${icon('down', 'xs')}</button>
+            <label class="btn btn-dark btn-sm">${icon('camera', 'xs')} Rasmni almashtirish<input type="file" accept="image/*" hidden data-replace /></label>
+            <span style="flex:1"></span>
+            <button type="button" class="btn btn-red btn-icon" data-rm aria-label="Slaydni o'chirish">${icon('trash', 'xs')}</button>
+          </div>
+        </div></div>`).join('') +
+        (slides.length < 15 ? `<label class="sld-add">${icon('plus')}<span><b>Slayd qo'shish</b><small>Bir nechta rasmni birdan tanlash mumkin. Tik (9:16) rasmlar eng yaxshi ko'rinadi.</small></span><input type="file" accept="image/*" multiple hidden /></label>` : '');
+    };
+    // Qayta chizishdan oldin kiritilgan qiymatlarni saqlab qolish
+    const collect = () => sl.querySelectorAll('.sld').forEach((d) => {
+      const x = slides[d.dataset.i];
+      d.querySelectorAll('[data-k]').forEach((f) => (x[f.dataset.k] = f.value));
+    });
+    drawSlides();
+
+    sl.addEventListener('change', async (e) => {
+      const d = e.target.closest('.sld');
+      if (e.target.dataset.k === 'link_type') {
+        collect();
+        slides[d.dataset.i].link_value = '';
+        return drawSlides();
+      }
+      if (e.target.matches('[data-replace]')) {
+        collect();
+        try { slides[d.dataset.i].image = await uploadImage(e.target.files[0]); drawSlides(); } catch (err) { toast(err.message, true); }
+        return;
+      }
+      const add = e.target.closest('.sld-add');
+      if (add) {
+        collect();
+        const files = [...e.target.files].slice(0, 15 - slides.length);
+        add.classList.add('busy');
+        for (const [n, f] of files.entries()) {
+          add.querySelector('b').textContent = `Yuklanmoqda ${n + 1} / ${files.length}...`;
+          try { slides.push({ image: await uploadImage(f), text: '', link_type: 'none' }); } catch (err) { toast(err.message, true); }
+        }
+        drawSlides();
+      }
+    });
+    sl.addEventListener('click', (e) => {
+      const d = e.target.closest('.sld');
+      if (!d) return;
+      const i = Number(d.dataset.i);
+      const mv = e.target.closest('[data-mv]');
+      if (mv) {
+        collect();
+        const j = i + Number(mv.dataset.mv);
+        [slides[i], slides[j]] = [slides[j], slides[i]];
+        drawSlides();
+      } else if (e.target.closest('[data-rm]')) {
+        collect();
+        slides.splice(i, 1);
+        drawSlides();
+      }
+    });
+
+    const f = box.querySelector('#sf');
+    box.querySelector('#ssave').onclick = (e) => withBtn(e.currentTarget, async () => {
+      collect();
+      const v = Object.fromEntries(new FormData(f));
+      const exp = v.expires === 'keep' ? s.expires_at : Number(v.expires) ? new Date(Date.now() + Number(v.expires) * 3600e3).toISOString() : null;
+      await api(s ? 'admin/stories/' + s.id : 'admin/stories', {
+        method: s ? 'PUT' : 'POST',
+        body: { title: v.title, sort: v.sort, is_active: f.elements.is_active.checked, cover, slides, expires_at: exp },
+      });
+      toast('Saqlandi');
+      close();
+      pStories(main);
+    });
+    box.querySelector('#sdel')?.addEventListener('click', (e) => {
+      if (!confirm("Istoriyani o'chirasizmi?")) return;
+      withBtn(e.currentTarget, async () => { await api('admin/stories/' + s.id, { method: 'DELETE' }); close(); pStories(main); });
+    });
+  };
+
+  main.querySelector('#nst').onclick = () => open(null);
+  main.querySelectorAll('[data-edit]').forEach((x) => (x.onclick = () => open(list.find((s) => s.id === Number(x.dataset.edit)))));
+  main.querySelectorAll('[data-act]').forEach((x) => (x.onchange = async () => {
+    const s = list.find((y) => y.id === Number(x.dataset.act));
+    try {
+      await api('admin/stories/' + s.id, { method: 'PUT', body: { ...s, is_active: x.checked } });
+      toast(x.checked ? 'Istoriya yoqildi' : "Istoriya o'chirildi");
+      pStories(main);
+    } catch (err) {
+      x.checked = !x.checked;
+      toast(err.message, true);
+    }
+  }));
 }
 
 /* ================= Mijozlar ================= */

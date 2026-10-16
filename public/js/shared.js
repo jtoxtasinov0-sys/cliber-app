@@ -98,6 +98,9 @@ const P = {
   menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
   eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
   alert: '<path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/>',
+  up: '<path d="M12 19V5M6 11l6-6 6 6"/>',
+  down: '<path d="M12 5v14M6 13l6 6 6-6"/>',
+  stories: '<circle cx="12" cy="12" r="9" stroke-dasharray="4 2.6"/><circle cx="12" cy="12" r="4.5"/>',
 };
 
 export const icon = (name, cls = '') => `<svg class="i ${cls}" viewBox="0 0 24 24" aria-hidden="true">${P[name] || P.sparkle}</svg>`;

@@ -161,6 +161,7 @@ let currentKey = '';
 
 // quiet=true: fon yangilanishi — sahifa animatsiyasi va scroll qayta o'ynamaydi (miltillashsiz)
 function router(quiet = false) {
+  if (quiet !== true) closeStory?.();
   document.body.classList.toggle('no-anim', quiet === true);
   const r = parseHash();
   scrollMemo[currentKey] = window.scrollY;
@@ -169,14 +170,20 @@ function router(quiet = false) {
   const fn = views[r.name] || vHome;
   document.getElementById('sheet-root').innerHTML = '';
   fn(r);
-  const isRoot = ROOTS.includes(r.name);
   renderTabbar();
   $view.classList.toggle('has-bar', Boolean($view.querySelector('.buybar')));
-  // Bosh sahifada Telegram'ning o'z "Yopish" tugmasi ko'rinadi
-  if (tg?.BackButton) r.name === '' || (isRoot && navStack.length <= 1) ? tg.BackButton.hide() : tg.BackButton.show();
+  syncBackButton();
   requestAnimationFrame(() => window.scrollTo(0, scrollMemo[currentKey] || 0));
 }
+// Bosh sahifada Telegram'ning o'z "Yopish" tugmasi ko'rinadi (istoriya ochiq bo'lsa — "Orqaga")
+function syncBackButton() {
+  if (!tg?.BackButton) return;
+  const name = parseHash().name;
+  if (closeStory || !(name === '' || (ROOTS.includes(name) && navStack.length <= 1))) tg.BackButton.show();
+  else tg.BackButton.hide();
+}
 function goBack() {
+  if (closeStory) return closeStory();
   if (navStack.length > 1) history.back();
   else go('#/', true);
 }
@@ -271,6 +278,7 @@ function quickAdd(p, imgEl) {
 /* ================= Sahifalar ================= */
 function vHome() {
   const { shop, banners, categories, products } = S.data;
+  const stories = S.data.stories || [];
   const name = tgUser?.first_name || S.profile.name?.split(' ')[0];
   const available = products.filter((p) => p.stock > 0);
   const best = [...available].sort((a, b) => b.sold_count - a.sold_count || b.is_featured - a.is_featured || a.sort - b.sort).slice(0, 10);
@@ -301,6 +309,8 @@ function vHome() {
     </div>
     <form class="searchbar" id="homeSearch">${icon('search', 'sm')}<input name="q" type="search" placeholder="Polo, krossovka, kostyum..." enterkeyhint="search" />
       <a class="filter-btn" href="#/catalog" aria-label="Katalog">${icon('sliders', 'sm')}</a></form>
+
+    ${stories.length ? storiesRow(stories) : ''}
 
     ${promos.length ? `<section class="section">
       <div class="section-head"><h2>Maxsus takliflar</h2></div>
@@ -389,6 +399,194 @@ function footer() {
   return `<div class="foot"><img src="/img/brand/logo_512.png" alt="" />
     <div><b style="color:var(--text);letter-spacing:.14em">${esc(s.name)}</b> · <em>Since ${esc(s.since)}</em></div>
     <div style="margin-top:4px">${esc(s.address)} · ${esc(s.hours)}</div></div>`;
+}
+
+/* ================= Istoriyalar ================= */
+const STORY_MS = 5500;
+const seenStories = ls.get('cl_stories_seen', {});
+const storySeen = (s) => seenStories[s.id] === s.updated_at;
+const storyCover = (s) => s.cover || s.slides[0]?.image || '/img/brand/logo_512.png';
+const storyHref = (x) =>
+  x.link_type === 'product' ? `#/product/${x.link_value}`
+  : x.link_type === 'category' ? `#/catalog?cat=${x.link_value}`
+  : x.link_type === 'url' ? x.link_value : '';
+const STORY_BTN = { product: "Mahsulotni ko'rish", category: "Bo'limga o'tish", url: 'Batafsil' };
+
+function ago(d) {
+  const m = Math.max(1, Math.round((Date.now() - new Date(d)) / 60000));
+  if (m < 60) return `${m} daqiqa oldin`;
+  if (m < 1440) return `${Math.round(m / 60)} soat oldin`;
+  return `${Math.round(m / 1440)} kun oldin`;
+}
+
+function storiesRow(stories) {
+  return `<div class="stories">${stories.map((s, i) => `<button class="story${storySeen(s) ? ' seen' : ''}" data-story="${i}">
+    <span class="st-ring"><img src="${esc(storyCover(s))}" alt="" loading="lazy" decoding="async" /></span>
+    <span class="st-t">${esc(s.title)}</span></button>`).join('')}</div>`;
+}
+
+let closeStory = null;
+// To'liq ekranli ko'ruvchi: chap/o'ng tomonni bosish — oldingi/keyingi slayd, bosib turish — pauza,
+// chapga/o'ngga surish — boshqa istoriya, pastga surish — yopish
+function openStories(list, si) {
+  closeStory?.();
+  const el = document.createElement('div');
+  el.className = 'sv';
+  el.innerHTML = `<div class="sv-stage"><div class="sv-bg"></div><img class="sv-img" alt="" /><div class="sv-spin"></div>
+    <div class="sv-top"><div class="sv-bars"></div>
+      <div class="sv-head"><img alt="" /><div class="sv-who"><b></b><small></small></div>
+        <button class="sv-x" aria-label="Yopish">${icon('x')}</button></div></div>
+    <div class="sv-foot"><p class="sv-text"></p><button class="btn btn-gold btn-block sv-cta"></button></div></div>`;
+  document.body.append(el);
+  document.body.classList.add('sv-open');
+  const $ = (q) => el.querySelector(q);
+  const stage = $('.sv-stage');
+  const img = $('.sv-img');
+  const bars = $('.sv-bars');
+  let story, slides, idx = 0, elapsed = 0, last = performance.now(), raf = 0, paused = false, ready = false, closed = false;
+
+  function showStory(i) {
+    si = i;
+    story = list[i];
+    slides = story.slides;
+    bars.innerHTML = slides.map(() => '<i><span></span></i>').join('');
+    $('.sv-head img').src = storyCover(story);
+    $('.sv-who b').textContent = story.title;
+    $('.sv-who small').textContent = ago(story.created_at);
+    if (!storySeen(story)) {
+      seenStories[story.id] = story.updated_at;
+      ls.set('cl_stories_seen', seenStories);
+      api(`stories/${story.id}/view`, { method: 'POST' }).catch(() => {});
+      document.querySelector(`.story[data-story="${i}"]`)?.classList.add('seen');
+    }
+    stage.classList.remove('swap');
+    void stage.offsetWidth;
+    stage.classList.add('swap');
+    showSlide(0);
+  }
+
+  function showSlide(j) {
+    idx = j;
+    elapsed = 0;
+    ready = false;
+    const x = slides[j];
+    [...bars.children].forEach((b, k) => (b.firstChild.style.width = k < j ? '100%' : '0%'));
+    el.classList.add('loading');
+    $('.sv-bg').style.backgroundImage = `url(${JSON.stringify(x.image)})`;
+    const done = () => {
+      if (img.dataset.src !== x.image || ready) return;
+      ready = true;
+      el.classList.remove('loading');
+    };
+    img.onload = img.onerror = done;
+    img.dataset.src = x.image;
+    img.src = x.image;
+    if (img.complete) done();
+    const text = $('.sv-text');
+    text.textContent = x.text || '';
+    text.hidden = !x.text;
+    const cta = $('.sv-cta');
+    const href = storyHref(x);
+    cta.hidden = !href;
+    cta.dataset.href = href;
+    cta.innerHTML = `${esc(x.button || STORY_BTN[x.link_type] || "Ko'rish")} ${icon('arrow', 'sm')}`;
+    const nxt = slides[j + 1]?.image || list[si + 1]?.slides[0]?.image;
+    if (nxt) new Image().src = nxt;
+  }
+
+  function tick(now) {
+    if (closed) return;
+    // fon rejimidan qaytganda vaqt sakrab ketmasligi uchun qadam cheklanadi
+    if (ready && !paused) elapsed += Math.min(now - last, 100);
+    last = now;
+    if (elapsed >= STORY_MS) next();
+    if (closed) return;
+    const bar = bars.children[idx]?.firstChild;
+    if (bar) bar.style.width = `${Math.min(100, (elapsed / STORY_MS) * 100)}%`;
+    raf = requestAnimationFrame(tick);
+  }
+
+  function next() {
+    if (idx < slides.length - 1) showSlide(idx + 1);
+    else if (si < list.length - 1) showStory(si + 1);
+    else close();
+  }
+  function prev() {
+    if (idx > 0) showSlide(idx - 1);
+    else if (si > 0) showStory(si - 1);
+    else showSlide(0);
+  }
+  function close() {
+    if (closed) return;
+    closed = true;
+    cancelAnimationFrame(raf);
+    clearTimeout(holdT);
+    closeStory = null;
+    document.removeEventListener('keydown', onKey);
+    document.body.classList.remove('sv-open');
+    el.classList.add('out');
+    setTimeout(() => el.remove(), 240);
+    syncBackButton();
+  }
+
+  let sx = 0, sy = 0, t0 = 0, down = false, holdT;
+  stage.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('.sv-x, .sv-cta')) return;
+    down = true;
+    sx = e.clientX;
+    sy = e.clientY;
+    t0 = Date.now();
+    paused = true;
+    holdT = setTimeout(() => el.classList.add('hold'), 220);
+  });
+  stage.addEventListener('pointermove', (e) => {
+    if (!down) return;
+    const dy = Math.max(0, e.clientY - sy);
+    stage.classList.toggle('drag', dy > 0);
+    stage.style.transform = dy ? `translateY(${dy}px) scale(${1 - Math.min(dy, 400) / 1600})` : '';
+  });
+  const release = (e, cancel) => {
+    if (!down) return;
+    down = false;
+    paused = false;
+    clearTimeout(holdT);
+    el.classList.remove('hold');
+    stage.classList.remove('drag');
+    stage.style.transform = '';
+    if (cancel) return;
+    const dx = e.clientX - sx;
+    const dy = e.clientY - sy;
+    if (dy > 90 && dy > Math.abs(dx)) return close();
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
+      haptic('light');
+      if (dx < 0) return si < list.length - 1 ? showStory(si + 1) : close();
+      return si > 0 ? showStory(si - 1) : showSlide(0);
+    }
+    if (Date.now() - t0 < 260 && Math.abs(dx) < 12 && Math.abs(dy) < 12) {
+      haptic('light');
+      e.clientX - stage.getBoundingClientRect().left < stage.offsetWidth / 3 ? prev() : next();
+    }
+  };
+  stage.addEventListener('pointerup', (e) => release(e));
+  stage.addEventListener('pointercancel', (e) => release(e, true));
+  stage.addEventListener('contextmenu', (e) => e.preventDefault());
+  $('.sv-x').onclick = close;
+  $('.sv-cta').onclick = () => {
+    const h = $('.sv-cta').dataset.href;
+    close();
+    h.startsWith('#') ? go(h) : openLink(h);
+  };
+  function onKey(e) {
+    if (e.key === 'Escape') close();
+    else if (e.key === 'ArrowRight') next();
+    else if (e.key === 'ArrowLeft') prev();
+  }
+  document.addEventListener('keydown', onKey);
+
+  closeStory = close;
+  syncBackButton();
+  showStory(si);
+  raf = requestAnimationFrame(tick);
 }
 
 function vCatalog(r) {
@@ -1089,6 +1287,11 @@ document.addEventListener('click', async (e) => {
     e.preventDefault();
     e.stopPropagation();
     return quickAdd(S.byId.get(Number(qa.dataset.qadd)), qa.closest('.pcard')?.querySelector('.pcard-img img'));
+  }
+  const sto = t.closest('[data-story]');
+  if (sto) {
+    haptic('light');
+    return openStories(S.data.stories || [], Number(sto.dataset.story));
   }
   if (t.closest('[data-back]')) return goBack();
   const g = t.closest('[data-go]');
