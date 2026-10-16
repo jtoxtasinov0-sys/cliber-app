@@ -1,0 +1,556 @@
+{
+  "brend": {
+    "nomi": "CLIMBER",
+    "toliq_nomi": "Climber Shahrixon",
+    "logo_yozuvi": "CLIMBER — By Sabirov's — Since 2009",
+    "tashkil_topgan": 2009,
+    "tavsif": "Erkaklar kiyim do'koni (Магазин мужской одежды)",
+    "shiorlar": [
+      "Eng sifatli kiyimlar ☑️",
+      "Siz izlagan uslub 🔥",
+      "Siz eng yaxshisiga loyiqsiz"
+    ]
+  },
+  "aloqa": {
+    "telefonlar": [
+      "+998 93 253 23 00",
+      "+998 94 384 83 83"
+    ],
+    "telefon_link": [
+      "tel:+998932532300",
+      "tel:+998943848383"
+    ],
+    "admin_telegram": "@sabiirovs",
+    "admin_link": "https://t.me/sabiirovs",
+    "telegram_kanal": "https://t.me/climbershahrixon",
+    "telegram_username": "@climbershahrixon",
+    "instagram": "https://www.instagram.com/climber_shahrixon/",
+    "instagram_username": "@climber_shahrixon",
+    "taplink": "https://taplink.cc/climber_shahrixon"
+  },
+  "manzil": {
+    "shahar": "Shahrixon, Andijon viloyati",
+    "kocha": "Xamza ko'chasi",
+    "moljal": [
+      "Hamkor bank yonida",
+      "Aksham Nur kafesi yonida"
+    ],
+    "koordinatalar": {
+      "lat": 40.709625,
+      "lng": 72.057649
+    },
+    "google_maps": "https://maps.google.com/?q=40.709625,72.057649",
+    "yandex_maps": "https://yandex.uz/maps/?pt=72.057649,40.709625&z=17",
+    "telegram_lokatsiya_post": "https://t.me/climbershahrixon/891"
+  },
+  "ish_vaqti": {
+    "ochilish": "08:00",
+    "yopilish": "00:00",
+    "matn": "08:00 — 00:00"
+  },
+  "yetkazib_berish": "O'zbekiston bo'ylab yetkazib berish xizmati mavjud",
+  "ranglar": {
+    "asosiy_qora": "#000000",
+    "oq": "#FFFFFF",
+    "qizil_aksent": "#B6070E",
+    "oltin_aksent": "#E2C369",
+    "karta_foni": "#1A1A1A"
+  },
+  "kategoriyalar": [
+    "Dvoykalar",
+    "Polo va futbolkalar",
+    "Oyoq kiyimlar",
+    "Aksessuarlar",
+    "Paltolar",
+    "Jinsi va trikotajlar",
+    "Kepkalar"
+  ],
+  "statistika_2026_10_14": {
+    "instagram_obunachilar": 7929,
+    "instagram_postlar": 197,
+    "telegram_obunachilar": 932
+  },
+  "mahsulotlar": [
+    {
+      "id": 1,
+      "nomi": "Kulrang kostyum-to'plam (kurtka + shim)",
+      "kategoriya": "Dvoykalar",
+      "narx": null,
+      "narx_matn": "Narxini adminga so'rang",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/01_1.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/4580",
+      "izoh": null
+    },
+    {
+      "id": 2,
+      "nomi": "Kulrang kostyum-to'plam, 2-ko'rinish",
+      "kategoriya": "Dvoykalar",
+      "narx": null,
+      "narx_matn": "Narxini adminga so'rang",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/02_1.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/4581",
+      "izoh": null
+    },
+    {
+      "id": 3,
+      "nomi": "Kulrang kostyum-to'plam, 3-ko'rinish",
+      "kategoriya": "Dvoykalar",
+      "narx": null,
+      "narx_matn": "Narxini adminga so'rang",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/03_1.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/4582",
+      "izoh": null
+    },
+    {
+      "id": 4,
+      "nomi": "Qora ko'ylak + shim to'plami",
+      "kategoriya": "Dvoykalar",
+      "narx": null,
+      "narx_matn": "Narxini adminga so'rang",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/04_1.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/4583",
+      "izoh": null
+    },
+    {
+      "id": 5,
+      "nomi": "Jigarrang charm krossovka",
+      "kategoriya": "Oyoq kiyimlar",
+      "narx": null,
+      "narx_matn": "Narxini adminga so'rang",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/05_1.jpg",
+        "mahsulotlar/05_2.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/4590",
+      "izoh": null
+    },
+    {
+      "id": 6,
+      "nomi": "Oq charm kedlar",
+      "kategoriya": "Oyoq kiyimlar",
+      "narx": null,
+      "narx_matn": "Narxini adminga so'rang",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/06_1.jpg",
+        "mahsulotlar/06_2.jpg",
+        "mahsulotlar/06_3.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/4592",
+      "izoh": null
+    },
+    {
+      "id": 7,
+      "nomi": "To'q ko'k krossovka",
+      "kategoriya": "Oyoq kiyimlar",
+      "narx": null,
+      "narx_matn": "Narxini adminga so'rang",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/07_1.jpg",
+        "mahsulotlar/07_2.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/4595",
+      "izoh": null
+    },
+    {
+      "id": 8,
+      "nomi": "Erkaklar sumkasi (kulrang)",
+      "kategoriya": "Aksessuarlar",
+      "narx": null,
+      "narx_matn": "Narxini adminga so'rang",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/08_1.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/4371",
+      "izoh": null
+    },
+    {
+      "id": 9,
+      "nomi": "Erkaklar sumkasi (kulrang), 2-ko'rinish",
+      "kategoriya": "Aksessuarlar",
+      "narx": null,
+      "narx_matn": "Narxini adminga so'rang",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/09_1.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/4370",
+      "izoh": null
+    },
+    {
+      "id": 10,
+      "nomi": "Masculino Premium shlyopka (qora)",
+      "kategoriya": "Oyoq kiyimlar",
+      "narx": 350000,
+      "narx_matn": "350 000 so'm",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/10_1.jpg",
+        "mahsulotlar/10_2.jpg",
+        "mahsulotlar/10_3.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/4169",
+      "izoh": "Kanaldagi izoh: Premium Quality, Made in China"
+    },
+    {
+      "id": 11,
+      "nomi": "Masculino shlyopka (yashil/qora)",
+      "kategoriya": "Oyoq kiyimlar",
+      "narx": 350000,
+      "narx_matn": "350 000 so'm",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/11_1.jpg",
+        "mahsulotlar/11_2.jpg",
+        "mahsulotlar/11_3.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/4166",
+      "izoh": "Narx shu seriyadagi 4169-postdan olingan — tekshiring"
+    },
+    {
+      "id": 12,
+      "nomi": "Masculino shlyopka (jigarrang)",
+      "kategoriya": "Oyoq kiyimlar",
+      "narx": 350000,
+      "narx_matn": "350 000 so'm",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/12_1.jpg",
+        "mahsulotlar/12_2.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/4163",
+      "izoh": "Narx shu seriyadagi 4169-postdan olingan — tekshiring"
+    },
+    {
+      "id": 13,
+      "nomi": "Masculino shlyopka (qora, klassik)",
+      "kategoriya": "Oyoq kiyimlar",
+      "narx": 350000,
+      "narx_matn": "350 000 so'm",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/13_1.jpg",
+        "mahsulotlar/13_2.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/4160",
+      "izoh": "Narx shu seriyadagi 4169-postdan olingan — tekshiring"
+    },
+    {
+      "id": 14,
+      "nomi": "Gratude Premium polo (to'q ko'k)",
+      "kategoriya": "Polo va futbolkalar",
+      "narx": 335000,
+      "narx_matn": "335 000 so'm",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/14_1.jpg",
+        "mahsulotlar/14_2.jpg",
+        "mahsulotlar/14_3.jpg",
+        "mahsulotlar/14_4.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/4082",
+      "izoh": null
+    },
+    {
+      "id": 15,
+      "nomi": "Gratude polo (oq)",
+      "kategoriya": "Polo va futbolkalar",
+      "narx": 335000,
+      "narx_matn": "335 000 so'm",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/15_1.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/4081",
+      "izoh": null
+    },
+    {
+      "id": 16,
+      "nomi": "Setka matoli polo (bordo)",
+      "kategoriya": "Polo va futbolkalar",
+      "narx": 335000,
+      "narx_matn": "335 000 so'm",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/16_1.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/4080",
+      "izoh": null
+    },
+    {
+      "id": 17,
+      "nomi": "Trikotaj futbolka (oq, chiziqli yoqa)",
+      "kategoriya": "Polo va futbolkalar",
+      "narx": 235000,
+      "narx_matn": "235 000 so'm",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/17_1.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/4137",
+      "izoh": null
+    },
+    {
+      "id": 18,
+      "nomi": "Trikotaj futbolka (havorang)",
+      "kategoriya": "Polo va futbolkalar",
+      "narx": 235000,
+      "narx_matn": "235 000 so'm",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/18_1.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/4136",
+      "izoh": null
+    },
+    {
+      "id": 19,
+      "nomi": "Trikotaj futbolka (oq)",
+      "kategoriya": "Polo va futbolkalar",
+      "narx": 220000,
+      "narx_matn": "220 000 so'm",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/19_1.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/4135",
+      "izoh": null
+    },
+    {
+      "id": 20,
+      "nomi": "Trikotaj futbolka (qora)",
+      "kategoriya": "Polo va futbolkalar",
+      "narx": 220000,
+      "narx_matn": "220 000 so'm",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/20_1.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/4134",
+      "izoh": null
+    },
+    {
+      "id": 21,
+      "nomi": "Trikotaj futbolka (qora, chiziqli)",
+      "kategoriya": "Polo va futbolkalar",
+      "narx": 210000,
+      "narx_matn": "210 000 so'm",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/21_1.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/4133",
+      "izoh": null
+    },
+    {
+      "id": 22,
+      "nomi": "Trikotaj futbolka (oq, naqshli)",
+      "kategoriya": "Polo va futbolkalar",
+      "narx": 210000,
+      "narx_matn": "210 000 so'm",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/22_1.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/4132",
+      "izoh": null
+    },
+    {
+      "id": 23,
+      "nomi": "Trikotaj futbolka (qizil)",
+      "kategoriya": "Polo va futbolkalar",
+      "narx": 210000,
+      "narx_matn": "210 000 so'm",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/23_1.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/4131",
+      "izoh": null
+    },
+    {
+      "id": 24,
+      "nomi": "Premium Quality futbolka (oq, chiziqli)",
+      "kategoriya": "Polo va futbolkalar",
+      "narx": 235000,
+      "narx_matn": "235 000 so'm",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/24_1.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/3585",
+      "izoh": null
+    },
+    {
+      "id": 25,
+      "nomi": "Trikotaj polo (oq)",
+      "kategoriya": "Polo va futbolkalar",
+      "narx": 265000,
+      "narx_matn": "265 000 so'm",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/25_1.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/3577",
+      "izoh": null
+    },
+    {
+      "id": 26,
+      "nomi": "Trikotaj polo (qora)",
+      "kategoriya": "Polo va futbolkalar",
+      "narx": 265000,
+      "narx_matn": "265 000 so'm",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/26_1.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/3576",
+      "izoh": null
+    },
+    {
+      "id": 27,
+      "nomi": "Trikotaj polo (jigarrang)",
+      "kategoriya": "Polo va futbolkalar",
+      "narx": 265000,
+      "narx_matn": "265 000 so'm",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/27_1.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/3575",
+      "izoh": null
+    },
+    {
+      "id": 28,
+      "nomi": "Erkaklar shlyopkasi — model 1",
+      "kategoriya": "Oyoq kiyimlar",
+      "narx": 245000,
+      "narx_matn": "245 000 so'm",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/28_1.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/3904",
+      "izoh": null
+    },
+    {
+      "id": 29,
+      "nomi": "Erkaklar shlyopkasi — model 2",
+      "kategoriya": "Oyoq kiyimlar",
+      "narx": 245000,
+      "narx_matn": "245 000 so'm",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/29_1.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/3905",
+      "izoh": null
+    },
+    {
+      "id": 30,
+      "nomi": "Erkaklar shlyopkasi — model 3",
+      "kategoriya": "Oyoq kiyimlar",
+      "narx": 275000,
+      "narx_matn": "275 000 so'm",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/30_1.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/3906",
+      "izoh": null
+    },
+    {
+      "id": 31,
+      "nomi": "Erkaklar shlyopkasi — model 4",
+      "kategoriya": "Oyoq kiyimlar",
+      "narx": 285000,
+      "narx_matn": "285 000 so'm",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/31_1.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/3907",
+      "izoh": null
+    },
+    {
+      "id": 32,
+      "nomi": "Erkaklar shlyopkasi — model 5",
+      "kategoriya": "Oyoq kiyimlar",
+      "narx": 275000,
+      "narx_matn": "275 000 so'm",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/32_1.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/3908",
+      "izoh": null
+    },
+    {
+      "id": 33,
+      "nomi": "Erkaklar shlyopkasi — model 6",
+      "kategoriya": "Oyoq kiyimlar",
+      "narx": 195000,
+      "narx_matn": "195 000 so'm",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/33_1.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/3909",
+      "izoh": null
+    },
+    {
+      "id": 34,
+      "nomi": "Erkaklar shlyopkasi — model 7",
+      "kategoriya": "Oyoq kiyimlar",
+      "narx": 285000,
+      "narx_matn": "285 000 so'm",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/34_1.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/3910",
+      "izoh": null
+    },
+    {
+      "id": 35,
+      "nomi": "Erkaklar shlyopkasi — model 8",
+      "kategoriya": "Oyoq kiyimlar",
+      "narx": 285000,
+      "narx_matn": "285 000 so'm",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/35_1.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/3911",
+      "izoh": null
+    },
+    {
+      "id": 36,
+      "nomi": "Erkaklar shlyopkasi — model 9",
+      "kategoriya": "Oyoq kiyimlar",
+      "narx": 275000,
+      "narx_matn": "275 000 so'm",
+      "valyuta": "UZS",
+      "rasmlar": [
+        "mahsulotlar/36_1.jpg"
+      ],
+      "manba_post": "https://t.me/climbershahrixon/3912",
+      "izoh": null
+    }
+  ]
+}

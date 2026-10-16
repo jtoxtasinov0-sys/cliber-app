@@ -1,0 +1,13 @@
+node_modules/
+.env
+.env.*
+.vercel/
+# xom manba fayllari (public/ ichiga ko'chirilgan)
+mahsulotlar/
+logo/
+ranglar_palitra.png
+climber_malumot.json
+scratch-*
+!.env.example
+OQING_MENI.txt
+ranglar.css

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
+  <circle cx="500" cy="500" r="500" fill="#000000"/>
+  <text x="500" y="500" text-anchor="middle" font-family="Montserrat, Arial, Helvetica, sans-serif" font-weight="700" font-size="165" fill="#FFFFFF">CLIMBER</text>
+  <text x="835" y="560" text-anchor="end" font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="40" fill="#B6070E">By Sabirov's</text>
+  <text x="500" y="710" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="56" fill="#E2C369">Since 2009</text>
+</svg>

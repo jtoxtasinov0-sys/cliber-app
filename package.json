@@ -1,0 +1,16 @@
+{
+  "name": "climber-miniapp",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "CLIMBER — Telegram Mini App do'kon va admin panel (ombor bilan)",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "db:setup": "node scripts/setup-db.mjs"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.4",
+    "ws": "^8.18.0"
+  }
+}
