@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { sql, SCHEMA } from '../lib/db.js';
 import { DEFAULT_SETTINGS } from '../lib/config.js';
-import { PRODUCT_ORDER, CATEGORY_ORDER, FEATURED } from './order.mjs';
+import { PRODUCT_ORDER, CATEGORY_ORDER, FEATURED, applyCatalogLayout } from './order.mjs';
 
 const seed = JSON.parse(readFileSync(path.join(root, 'data/seed.json'), 'utf8'));
 const reset = process.argv.includes('--reset');
@@ -80,6 +80,7 @@ async function run() {
   for (const [i, b] of banners.entries()) {
     await sql(`INSERT INTO banners(badge, title, subtitle, image, link_type, link_value, sort) VALUES ($1,$2,$3,$4,$5,$6,$7)`, [...b, i]);
   }
+  await applyCatalogLayout(sql);
   console.log(`Seed tayyor: ${seed.mahsulotlar.length} mahsulot, ${seed.kategoriyalar.length} kategoriya.`);
 }
 

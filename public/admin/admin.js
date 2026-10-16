@@ -722,18 +722,31 @@ function stockDoc(type, rows, variantId, onDone) {
 /* ================= Kategoriyalar ================= */
 async function pCategories(main) {
   const cats = await loadCats();
-  main.innerHTML = `<div class="topline"><h1>Kategoriyalar<small>Mini app'dagi bo'limlar. Bo'sh kategoriyalar ilovada ko'rinmaydi.</small></h1></div>
-    <div class="panel" style="max-width:760px"><div class="table-wrap"><table class="t"><thead><tr><th>Nomi</th><th class="r">Tartib</th><th class="r">Mahsulot</th><th>Faol</th><th></th></tr></thead><tbody>
-    ${cats.map((c) => `<tr data-id="${c.id}"><td><input class="input" data-k="name" value="${esc(c.name)}" /></td>
+  main.innerHTML = `<div class="topline"><h1>Kategoriyalar<small>Mini app'dagi bo'limlar. Bo'sh kategoriyalar ilovada ko'rinmaydi. Rasm qo'yilmasa — birinchi mahsulot rasmi olinadi.</small></h1></div>
+    <div class="panel" style="max-width:860px"><div class="table-wrap"><table class="t"><thead><tr><th>Rasm</th><th>Nomi</th><th class="r">Tartib</th><th class="r">Mahsulot</th><th>Faol</th><th></th></tr></thead><tbody>
+    ${cats.map((c) => `<tr data-id="${c.id}" data-image="${esc(c.image || '')}"><td><label class="catimg" title="Rasm yuklash">${c.image ? `<img src="${esc(c.image)}" alt="" />` : icon('camera', 'sm')}<input type="file" accept="image/*" hidden /></label></td>
+      <td><input class="input" data-k="name" value="${esc(c.name)}" /></td>
       <td class="r"><input class="input" data-k="sort" type="number" value="${c.sort}" style="width:80px" /></td>
       <td class="r">${c.count}</td><td><label class="toggle"><input type="checkbox" data-k="is_active" ${c.is_active ? 'checked' : ''} /><span class="sw"></span></label></td>
       <td class="r nowrap"><button class="btn btn-dark btn-sm" data-save>Saqlash</button> <button class="btn btn-red btn-icon" data-del ${c.count ? 'disabled title="Avval mahsulotlarni ko\'chiring"' : ''}>${icon('trash', 'xs')}</button></td></tr>`).join('')}
-    <tr><td><input class="input" id="nc" placeholder="Yangi kategoriya nomi" /></td><td class="r"><input class="input" id="ns" type="number" value="${cats.length}" style="width:80px" /></td><td></td><td></td>
+    <tr><td></td><td><input class="input" id="nc" placeholder="Yangi kategoriya nomi" /></td><td class="r"><input class="input" id="ns" type="number" value="${cats.length}" style="width:80px" /></td><td></td><td></td>
       <td class="r"><button class="btn btn-gold btn-sm" id="addC">${icon('plus', 'xs')} Qo'shish</button></td></tr>
     </tbody></table></div></div>`;
   main.querySelectorAll('tr[data-id]').forEach((tr) => {
     const id = tr.dataset.id;
-    const val = () => ({ name: tr.querySelector('[data-k=name]').value, sort: tr.querySelector('[data-k=sort]').value, is_active: tr.querySelector('[data-k=is_active]').checked });
+    const val = () => ({ name: tr.querySelector('[data-k=name]').value, sort: tr.querySelector('[data-k=sort]').value, is_active: tr.querySelector('[data-k=is_active]').checked, image: tr.dataset.image });
+    tr.querySelector('.catimg input').onchange = async (e) => {
+      try {
+        const { url } = await api('admin/upload', { method: 'POST', body: { image: await compressImage(e.target.files[0], 700) } });
+        tr.dataset.image = url;
+        tr.querySelector('.catimg').innerHTML = `<img src="${esc(url)}" alt="" /><input type="file" accept="image/*" hidden />`;
+        await api('admin/categories/' + id, { method: 'PUT', body: val() });
+        toast('Rasm saqlandi');
+        pCategories(main);
+      } catch (err) {
+        toast(err.message, true);
+      }
+    };
     tr.querySelector('[data-save]').onclick = (e) => withBtn(e.currentTarget, async () => { await api('admin/categories/' + id, { method: 'PUT', body: val() }); toast('Saqlandi'); });
     tr.querySelector('[data-del]').onclick = (e) => {
       if (!confirm("Kategoriyani o'chirasizmi?")) return;

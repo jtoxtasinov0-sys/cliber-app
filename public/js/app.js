@@ -93,6 +93,7 @@ function productCard(p) {
         ${out ? `<span class="badge dark">Tugagan</span>` : ''}
       </div>
       <button class="fav${S.favs.has(p.id) ? ' on' : ''}" data-fav="${p.id}" aria-label="Sevimli">${icon('heart', 'sm')}</button>
+      ${!out && p.price ? `<button class="qadd" data-qadd="${p.id}" aria-label="Savatga qo'shish">${icon('bag', 'sm')}<i>+</i></button>` : ''}
     </div>
     <div class="pcard-body">
       ${p.brand ? `<div class="pcard-brand">${esc(p.brand)}</div>` : `<div class="pcard-brand">${esc(p.category_name || 'CLIMBER')}</div>`}
@@ -130,11 +131,22 @@ function sheet(html) {
 
 /* ================= Router ================= */
 const ROOTS = ['', 'catalog', 'cart', 'favorites', 'profile'];
+const VIEWS = ['', 'catalog', 'product', 'cart', 'checkout', 'order', 'orders', 'favorites', 'profile'];
+// Telegram manzilga "#tgWebAppData=..." qo'shadi — bu bizning sahifa emas
+const isTgHash = () => /^#tgWebApp/.test(location.hash);
 function parseHash() {
-  const h = location.hash.replace(/^#\/?/, '');
+  const h = isTgHash() ? '' : location.hash.replace(/^#\/?/, '');
   const [path, qs] = h.split('?');
   const parts = path.split('/').filter(Boolean);
-  return { name: parts[0] || '', arg: parts[1], q: new URLSearchParams(qs || '') };
+  const name = VIEWS.includes(parts[0]) ? parts[0] : '';
+  return { name, arg: parts[1], q: new URLSearchParams(qs || '') };
+}
+// Ilova ichidagi o'tishlar tarixi: orqaga tugmasi ilovadan tashqariga chiqib ketmasligi uchun
+const navStack = [];
+function trackNav() {
+  const h = location.hash || '#/';
+  if (navStack.length > 1 && navStack[navStack.length - 2] === h) navStack.pop();
+  else if (navStack[navStack.length - 1] !== h) navStack.push(h);
 }
 const go = (h, replace = false) => (replace ? location.replace(h) : (location.hash = h));
 const scrollMemo = {};
@@ -149,15 +161,15 @@ function router() {
   document.getElementById('sheet-root').innerHTML = '';
   fn(r);
   const isRoot = ROOTS.includes(r.name);
-  $tab.classList.toggle('hide', !isRoot);
-  $view.classList.toggle('no-tab', !isRoot);
   renderTabbar();
-  if (tg?.BackButton) isRoot && r.name === '' ? tg.BackButton.hide() : tg.BackButton.show();
+  $view.classList.toggle('has-bar', Boolean($view.querySelector('.buybar')));
+  // Bosh sahifada Telegram'ning o'z "Yopish" tugmasi ko'rinadi
+  if (tg?.BackButton) r.name === '' || (isRoot && navStack.length <= 1) ? tg.BackButton.hide() : tg.BackButton.show();
   requestAnimationFrame(() => window.scrollTo(0, scrollMemo[currentKey] || 0));
 }
 function goBack() {
-  if (history.length > 1) history.back();
-  else go('#/');
+  if (navStack.length > 1) history.back();
+  else go('#/', true);
 }
 tg?.BackButton?.onClick(goBack);
 
@@ -176,6 +188,75 @@ function renderTabbar() {
 function bumpCart() {
   const c = $tab.querySelector('.count');
   if (c) { c.classList.remove('bump'); void c.offsetWidth; c.classList.add('bump'); }
+}
+
+// Rasm savat tugmasiga "uchib" tushadi
+function flyToCart(src, done) {
+  const target = $tab.querySelector('.tab-cart');
+  if (!src || !target || !src.getBoundingClientRect().width) return done();
+  const a = src.getBoundingClientRect();
+  const b = target.getBoundingClientRect();
+  const fly = document.createElement('img');
+  fly.src = src.currentSrc || src.src;
+  fly.className = 'fly';
+  Object.assign(fly.style, { left: a.left + 'px', top: a.top + 'px', width: a.width + 'px', height: a.height + 'px' });
+  document.body.append(fly);
+  const dx = b.left + b.width / 2 - (a.left + a.width / 2);
+  const dy = b.top + b.height / 2 - (a.top + a.height / 2);
+  const anim = fly.animate([
+    { transform: 'translate(0, 0) scale(1)', opacity: 1, borderRadius: '22px' },
+    { transform: `translate(${dx * 0.35}px, ${dy * 0.25 - 70}px) scale(0.55)`, opacity: 1, borderRadius: '30px', offset: 0.45 },
+    { transform: `translate(${dx}px, ${dy}px) scale(0.06)`, opacity: 0.4, borderRadius: '50%' },
+  ], { duration: 780, easing: 'cubic-bezier(0.45, 0, 0.55, 1)' });
+  // Animatsiya to'xtab qolsa ham (fon rejimi) savat baribir yangilanadi
+  let finished = false;
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    fly.remove();
+    done();
+    const t = $tab.querySelector('.tab-cart');
+    t?.classList.add('catch');
+    setTimeout(() => t?.classList.remove('catch'), 450);
+  };
+  anim.onfinish = finish;
+  setTimeout(finish, 950);
+}
+
+function addToCart(p, v, qty, imgEl) {
+  const ex = S.cart.find((c) => c.variant_id === v.id);
+  if ((ex ? ex.qty : 0) + qty > v.stock) {
+    hapticOk('error');
+    toast(`Omborda faqat ${v.stock} dona bor`, true);
+    return false;
+  }
+  if (ex) ex.qty += qty;
+  else S.cart.push({ variant_id: v.id, product_id: p.id, qty });
+  ls.set('cl_cart', S.cart);
+  hapticOk();
+  flyToCart(imgEl, () => { renderTabbar(); bumpCart(); });
+  toast(`Savatga qo'shildi${p.variants.length > 1 ? ` · ${v.size}` : ''}`);
+  return true;
+}
+
+// Mahsulot ichiga kirmasdan savatga qo'shish (o'lcham bo'lsa — tanlash oynasi)
+function quickAdd(p, imgEl) {
+  const avail = p.variants.filter((v) => v.stock > 0);
+  if (!avail.length) return toast('Bu mahsulot tugagan', true);
+  if (p.variants.length === 1) return addToCart(p, p.variants[0], 1, imgEl);
+  haptic('light');
+  const m = sheet(`<div class="qs-head"><img src="${esc(p.images[0] || '/img/brand/logo_512.png')}" alt="" />
+      <div><div class="pcard-brand">${esc(p.brand || p.category_name || '')}</div><b>${esc(p.name)}</b><div class="price">${priceHtml(p)}</div></div></div>
+    <div class="sub-h">O'lchamni tanlang</div>
+    <div class="sizes">${p.variants.map((v) => `<button class="size" data-qv="${v.id}" ${v.stock <= 0 ? 'disabled' : ''}>${esc(v.size)}${isLow(v.stock) ? `<small>${v.stock}</small>` : ''}</button>`).join('')}</div>
+    <a class="btn btn-dark btn-block" href="#/product/${p.id}" style="margin-top:18px">Batafsil ko'rish ${icon('arrow', 'sm')}</a>`);
+  m.el.querySelector('.sizes').onclick = (e) => {
+    const b = e.target.closest('[data-qv]');
+    if (!b || b.disabled) return;
+    b.classList.add('on');
+    const v = p.variants.find((x) => x.id === Number(b.dataset.qv));
+    if (addToCart(p, v, 1, m.el.querySelector('.qs-head img'))) setTimeout(m.close, 120);
+  };
 }
 
 /* ================= Sahifalar ================= */
@@ -212,10 +293,6 @@ function vHome() {
     <form class="searchbar" id="homeSearch">${icon('search', 'sm')}<input name="q" type="search" placeholder="Polo, krossovka, kostyum..." enterkeyhint="search" />
       <a class="filter-btn" href="#/catalog" aria-label="Katalog">${icon('sliders', 'sm')}</a></form>
 
-    <div class="hscroll chips">
-      ${categories.map((c) => `<a class="chip" href="#/catalog?cat=${c.id}"><span class="ci">${icon(categoryIcon(c.name), 'sm')}</span>${esc(c.name)}</a>`).join('')}
-    </div>
-
     ${promos.length ? `<section class="section">
       <div class="section-head"><h2>Maxsus takliflar</h2></div>
       <div class="promo-track" id="promoTrack">
@@ -230,6 +307,14 @@ function vHome() {
         </a>`).join('')}
       </div>
       <div class="dots" id="promoDots">${promos.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div>
+    </section>` : ''}
+
+    ${categories.length ? `<section class="section">
+      <div class="section-head"><h2>Kategoriyalar</h2><a class="link-more" href="#/catalog">Katalog ${icon('arrow', 'xs')}</a></div>
+      <div class="catgrid">${categories.map((c) => {
+        const img = c.image || products.find((p) => p.category_id === c.id && p.images[0])?.images[0];
+        return `<a class="cattile" href="#/catalog?cat=${c.id}"><div class="ct-img">${img ? `<img src="${esc(img)}" alt="" loading="lazy" />` : ''}<span class="ct-n">${c.count}</span></div><b>${esc(c.name)}</b></a>`;
+      }).join('')}</div>
     </section>` : ''}
 
     ${best.length ? `<section class="section">
@@ -488,14 +573,8 @@ function vProduct(r) {
       return;
     }
     const v = p.variants.find((x) => x.id === sel);
-    const ex = S.cart.find((c) => c.variant_id === sel);
-    const already = ex ? ex.qty : 0;
-    if (already + qty > v.stock) return toast(`Omborda faqat ${v.stock} dona bor`, true);
-    if (ex) ex.qty += qty;
-    else S.cart.push({ variant_id: sel, product_id: p.id, qty });
-    saveCart();
-    hapticOk();
-    toast("Savatga qo'shildi");
+    const gi = Math.round(gal.scrollLeft / (gal.offsetWidth || 1));
+    if (!addToCart(p, v, qty, gal.children[gi] || gal.children[0])) return;
     qty = 1;
     update();
   };
@@ -567,7 +646,6 @@ function vCart() {
       <a class="btn btn-gold" href="#/checkout"${hasIssue ? ' style="pointer-events:none;opacity:.45"' : ''}>Rasmiylashtirish ${icon('arrow', 'sm')}</a>
     </div>
   </div>`;
-  $view.style.paddingBottom = '210px';
 
   $view.querySelector('#clearCart').onclick = () => {
     if (!confirm('Savatni tozalaysizmi?')) return;
@@ -639,7 +717,7 @@ function vCheckout() {
       </div>
       <p class="muted" style="font-size:12px;text-align:center;margin:14px 10px 0">Buyurtma berish orqali siz mahsulotlar ${payment.reserve_hours} soat davomida siz uchun band qilinishiga rozilik bildirasiz.</p>
     </form>
-    <div class="buybar"><button class="btn btn-gold btn-block" id="submit" form="co">Buyurtma berish</button></div>
+    <div class="buybar solo"><button class="btn btn-gold btn-block" id="submit" form="co">Buyurtma berish</button></div>
   </div>`;
 
   const f = document.getElementById('co');
@@ -997,6 +1075,12 @@ document.addEventListener('click', async (e) => {
     if (parseHash().name === 'favorites') vFavorites();
     return;
   }
+  const qa = t.closest('[data-qadd]');
+  if (qa) {
+    e.preventDefault();
+    e.stopPropagation();
+    return quickAdd(S.byId.get(Number(qa.dataset.qadd)), qa.closest('.pcard')?.querySelector('.pcard-img img'));
+  }
   if (t.closest('[data-back]')) return goBack();
   const g = t.closest('[data-go]');
   if (g) return go(g.dataset.go);
@@ -1043,6 +1127,7 @@ document.addEventListener('click', async (e) => {
 
 window.addEventListener('hashchange', () => {
   $view.style.paddingBottom = '';
+  trackNav();
   router();
 });
 
@@ -1078,10 +1163,12 @@ async function boot() {
     return;
   }
   const start = tg?.initDataUnsafe?.start_param;
-  if (start && !location.hash) {
-    if (/^p\d+$/.test(start)) location.hash = '#/product/' + start.slice(1);
-    else if (/^CL-\d+$/.test(start)) location.hash = '#/order/' + start;
+  if (isTgHash() || !location.hash) history.replaceState(null, '', location.pathname + location.search + '#/');
+  if (start && location.hash === '#/') {
+    if (/^p\d+$/.test(start)) history.replaceState(null, '', '#/product/' + start.slice(1));
+    else if (/^CL-\d+$/.test(start)) history.replaceState(null, '', '#/order/' + start);
   }
+  trackNav();
   router();
   document.getElementById('splash').classList.add('out');
   loadOrders().then((list) => {

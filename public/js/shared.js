@@ -106,7 +106,7 @@ export function categoryIcon(name = '') {
   const n = name.toLowerCase();
   if (n.includes('dvoyka') || n.includes('kostyum')) return 'tie';
   if (n.includes('polo') || n.includes('futbol') || n.includes("ko'ylak")) return 'shirt';
-  if (n.includes('oyoq') || n.includes('krossov') || n.includes('poyabzal')) return 'shoe';
+  if (n.includes('oyoq') || n.includes('krossov') || n.includes('poyabzal') || n.includes('shlyop') || n.includes('ked')) return 'shoe';
   if (n.includes('aksess') || n.includes('sumka')) return 'briefcase';
   if (n.includes('palto') || n.includes('kurtka')) return 'coat';
   if (n.includes('jinsi') || n.includes('shim') || n.includes('trikotaj')) return 'jeans';
