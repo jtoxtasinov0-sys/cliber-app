@@ -130,6 +130,13 @@ function sheet(html) {
 }
 
 /* ================= Router ================= */
+// Joriy sahifani o'rnida yangilash (animatsiyasiz, scroll joyida qoladi)
+function quiet(fn) {
+  const y = window.scrollY;
+  document.body.classList.add('no-anim');
+  fn();
+  requestAnimationFrame(() => window.scrollTo(0, y));
+}
 const ROOTS = ['', 'catalog', 'cart', 'favorites', 'profile'];
 const VIEWS = ['', 'catalog', 'product', 'cart', 'checkout', 'order', 'orders', 'favorites', 'profile'];
 // Telegram manzilga "#tgWebAppData=..." qo'shadi — bu bizning sahifa emas
@@ -152,7 +159,9 @@ const go = (h, replace = false) => (replace ? location.replace(h) : (location.ha
 const scrollMemo = {};
 let currentKey = '';
 
-function router() {
+// quiet=true: fon yangilanishi — sahifa animatsiyasi va scroll qayta o'ynamaydi (miltillashsiz)
+function router(quiet = false) {
+  document.body.classList.toggle('no-anim', quiet === true);
   const r = parseHash();
   scrollMemo[currentKey] = window.scrollY;
   currentKey = location.hash;
@@ -927,7 +936,7 @@ async function vOrder(r) {
       hapticOk();
       toast('Chek yuborildi! Admin tekshirmoqda');
       loadOrders();
-      vOrder(r);
+      quiet(() => vOrder(r));
     } catch (e) {
       toast(e.message, true);
       vOrder(r);
@@ -1041,7 +1050,7 @@ function infoSheet(kind) {
         <div style="margin-top:8px;font-size:14px">${esc([p.region, p.district, p.address].filter(Boolean).join(', '))}</div></div>
         <button class="btn btn-dark btn-block" style="margin-top:12px" id="forget">${icon('trash', 'sm')} Manzilni o'chirish</button>`
         : `<p class="muted">Manzil birinchi buyurtmani rasmiylashtirganingizda avtomatik saqlanadi.</p>`}`);
-    m.el.querySelector('#forget')?.addEventListener('click', () => { S.profile = {}; ls.set('cl_profile', {}); m.close(); vProfile(); });
+    m.el.querySelector('#forget')?.addEventListener('click', () => { S.profile = {}; ls.set('cl_profile', {}); m.close(); quiet(vProfile); });
     return;
   }
   if (kind === 'delivery') {
@@ -1072,7 +1081,7 @@ document.addEventListener('click', async (e) => {
     saveFavs();
     haptic('medium');
     document.querySelectorAll(`[data-fav="${id}"]`).forEach((b) => b.classList.toggle('on', S.favs.has(id)));
-    if (parseHash().name === 'favorites') vFavorites();
+    if (parseHash().name === 'favorites') quiet(vFavorites);
     return;
   }
   const qa = t.closest('[data-qadd]');
@@ -1111,7 +1120,7 @@ document.addEventListener('click', async (e) => {
     S.cart = S.cart.filter((c) => c.variant_id !== Number(rm.dataset.rm));
     saveCart();
     haptic('medium');
-    return vCart();
+    return quiet(vCart);
   }
   const dq = t.closest('[data-dq]');
   if (dq) {
@@ -1121,7 +1130,7 @@ document.addEventListener('click', async (e) => {
     c.qty = Math.max(1, Math.min(v.stock, c.qty + Number(dq.dataset.d)));
     saveCart();
     haptic();
-    return vCart();
+    return quiet(vCart);
   }
 });
 
@@ -1152,9 +1161,11 @@ async function boot() {
   try {
     if (cached?.products) {
       indexData(cached);
+      const before = JSON.stringify(cached);
       fresh.then((d) => {
+        if (JSON.stringify(d) === before) return;
         indexData(d);
-        if (['', 'catalog', 'favorites', 'cart'].includes(parseHash().name) && !document.querySelector('.sheet')) router();
+        if (['', 'catalog', 'favorites', 'cart'].includes(parseHash().name) && !document.querySelector('.sheet') && !document.activeElement?.matches('input')) router(true);
       }).catch(() => {});
     } else indexData(await fresh);
   } catch (e) {
@@ -1173,7 +1184,7 @@ async function boot() {
   document.getElementById('splash').classList.add('out');
   loadOrders().then((list) => {
     const n = parseHash().name;
-    if (n === 'profile' || (n === '' && list.some((o) => o.payment_status === 'awaiting' && o.status === 'new'))) router();
+    if (n === 'profile' || (n === '' && list.some((o) => o.payment_status === 'awaiting' && o.status === 'new'))) router(true);
   });
 }
 boot();
