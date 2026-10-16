@@ -282,3 +282,21 @@ table.t { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 .sld-add small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
 .sld-add.busy { pointer-events: none; opacity: 0.7; }
 @media (max-width: 560px) { .sld { flex-direction: column; } .sld-img { width: 120px; } }
+.sld-adds { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+button.sld-add { font: inherit; text-align: left; width: 100%; }
+.pp { margin-top: 12px; padding: 14px; border-radius: 14px; background: var(--bg-2); border: 1px solid var(--line-gold); }
+.pp-h { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.pp-h .search { flex: 1; min-width: 200px; }
+.pp-h .search .input { min-width: 0; }
+.pp-h .pp-cat { width: auto; flex: 0 1 220px; }
+.pp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 10px; max-height: 360px; overflow-y: auto; margin-top: 12px; padding: 2px; }
+.pp-it { display: flex; flex-direction: column; gap: 4px; padding: 6px 6px 9px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line); text-align: left; color: inherit; font: inherit; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+.pp-it:hover { border-color: var(--line-2); }
+.pp-it.on { border-color: var(--gold-2); background: var(--gold-soft); }
+.pp-img { position: relative; aspect-ratio: 4 / 5; border-radius: 8px; overflow: hidden; background: var(--panel-2); }
+.pp-img img { width: 100%; height: 100%; object-fit: cover; }
+.pp-img i { position: absolute; top: 6px; right: 6px; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #fff; background: rgba(0, 0, 0, 0.35); color: #141009; font: 800 12px/20px var(--f-body); font-style: normal; text-align: center; }
+.pp-it.on .pp-img i { background: var(--gold); border-color: var(--gold); }
+.pp-it b { font-size: 12.5px; font-weight: 600; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.pp-it small { color: var(--gold); font-size: 12px; font-weight: 600; }
+.pp-f { display: flex; align-items: center; gap: 10px; margin-top: 12px; }

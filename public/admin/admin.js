@@ -850,6 +850,7 @@ async function pStories(main) {
       <div class="imgs" id="cov"></div>
       <div class="sec-t">Slaydlar</div>
       <div class="slds" id="sl"></div>
+      <div class="pp" id="pp" hidden></div>
       <label class="toggle" style="margin-top:18px"><input type="checkbox" name="is_active" ${s?.is_active !== false ? 'checked' : ''} /><span class="sw"></span>Faol (ilovada ko'rinadi)</label>
     </form><div class="modal-f">${s ? `<button class="btn btn-red" id="sdel">${icon('trash', 'sm')}</button><span style="flex:1"></span>` : ''}<button class="btn btn-dark" data-close>Bekor</button><button class="btn btn-gold" id="ssave">Saqlash</button></div>`);
 
@@ -889,7 +890,72 @@ async function pStories(main) {
             <button type="button" class="btn btn-red btn-icon" data-rm aria-label="Slaydni o'chirish">${icon('trash', 'xs')}</button>
           </div>
         </div></div>`).join('') +
-        (slides.length < 15 ? `<label class="sld-add">${icon('plus')}<span><b>Slayd qo'shish</b><small>Bir nechta rasmni birdan tanlash mumkin. Tik (9:16) rasmlar eng yaxshi ko'rinadi.</small></span><input type="file" accept="image/*" multiple hidden /></label>` : '');
+        (slides.length < 15 ? `<div class="sld-adds">
+          <button type="button" class="sld-add" data-pick>${icon('shirt')}<span><b>Mahsulotdan qo'shish</b><small>Ilovadagi mahsulot rasmi, nomi, narxi va "Ko'rish" tugmasi bilan</small></span></button>
+          <label class="sld-add">${icon('camera')}<span><b>Rasm yuklash</b><small>Bir nechta rasmni birdan tanlash mumkin. Tik (9:16) rasmlar eng yaxshi ko'rinadi.</small></span><input type="file" accept="image/*" multiple hidden /></label>
+        </div>` : '');
+    };
+
+    // Mahsulot tanlash paneli: tanlangan mahsulotlar slayd bo'lib qo'shiladi (rasm + nom + narx + mahsulotga tugma)
+    const pp = box.querySelector('#pp');
+    const norm = (x) => String(x || '').toLowerCase().replace(/[ʻʼ`’']/g, '');
+    const openPicker = () => {
+      const picked = [];
+      pp.hidden = false;
+      pp.innerHTML = `<div class="pp-h"><div class="search">${icon('search', 'sm')}<input class="input" placeholder="Mahsulot qidirish..." /></div>
+          <select class="input pp-cat"><option value="">Barcha kategoriyalar</option>${cats.map((c) => `<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select>
+          <button type="button" class="btn btn-dark btn-icon" data-ppx aria-label="Yopish">${icon('x', 'xs')}</button></div>
+        <div class="pp-grid"></div>
+        <div class="pp-f"><span class="muted" id="ppn">Bir yoki bir nechta mahsulotni tanlang</span><span style="flex:1"></span>
+          <button type="button" class="btn btn-gold btn-sm" data-ppadd disabled>${icon('plus', 'xs')} Qo'shish</button></div>`;
+      const q = pp.querySelector('.search input');
+      const cat = pp.querySelector('.pp-cat');
+      const grid = pp.querySelector('.pp-grid');
+      const draw = () => {
+        const items = prods.filter((p) => p.is_active && p.images[0] && (!cat.value || String(p.category_id) === cat.value) && norm(p.name).includes(norm(q.value.trim())));
+        grid.innerHTML = items.map((p) => `<button type="button" class="pp-it${picked.includes(p.id) ? ' on' : ''}" data-pid="${p.id}">
+            <span class="pp-img"><img src="${esc(p.images[0])}" alt="" loading="lazy" /><i>${picked.includes(p.id) ? picked.indexOf(p.id) + 1 : ''}</i></span>
+            <b>${esc(p.name)}</b><small>${p.price ? money(p.price) : "Narx so'rov bo'yicha"}</small></button>`).join('') || `<p class="muted">Mahsulot topilmadi</p>`;
+      };
+      const sync = () => {
+        const n = picked.length;
+        const room = 15 - slides.length;
+        pp.querySelector('#ppn').textContent = n ? `${n} ta tanlandi${n > room ? ` · faqat ${room} tasi sig'adi` : ''}` : 'Bir yoki bir nechta mahsulotni tanlang';
+        const btn = pp.querySelector('[data-ppadd]');
+        btn.disabled = !n;
+        btn.innerHTML = `${icon('plus', 'xs')} ${n ? `${Math.min(n, room)} ta slayd qo'shish` : "Qo'shish"}`;
+      };
+      q.oninput = draw;
+      cat.onchange = draw;
+      grid.onclick = (e) => {
+        const it = e.target.closest('[data-pid]');
+        if (!it) return;
+        const id = Number(it.dataset.pid);
+        const i = picked.indexOf(id);
+        i < 0 ? picked.push(id) : picked.splice(i, 1);
+        draw();
+        sync();
+      };
+      pp.querySelector('[data-ppx]').onclick = () => { pp.hidden = true; pp.innerHTML = ''; };
+      pp.querySelector('[data-ppadd]').onclick = () => {
+        collect();
+        const add = picked.slice(0, 15 - slides.length);
+        for (const id of add) {
+          const p = prods.find((x) => x.id === id);
+          slides.push({ image: p.images[0], text: p.price ? `${p.name}\n${money(p.price)}` : p.name, link_type: 'product', link_value: String(p.id), button: '' });
+        }
+        if (!box.querySelector('#sf').elements.title.value.trim() && picked.length === 1) {
+          box.querySelector('#sf').elements.title.value = prods.find((x) => x.id === picked[0]).name.slice(0, 40);
+        }
+        pp.hidden = true;
+        pp.innerHTML = '';
+        drawSlides();
+        toast(`${add.length} ta slayd qo'shildi`);
+      };
+      draw();
+      sync();
+      q.focus();
+      pp.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     };
     // Qayta chizishdan oldin kiritilgan qiymatlarni saqlab qolish
     const collect = () => sl.querySelectorAll('.sld').forEach((d) => {
@@ -923,6 +989,7 @@ async function pStories(main) {
       }
     });
     sl.addEventListener('click', (e) => {
+      if (e.target.closest('[data-pick]')) return openPicker();
       const d = e.target.closest('.sld');
       if (!d) return;
       const i = Number(d.dataset.i);
