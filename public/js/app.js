@@ -183,7 +183,7 @@ function vHome() {
   const { shop, banners, categories, products } = S.data;
   const name = tgUser?.first_name || S.profile.name?.split(' ')[0];
   const available = products.filter((p) => p.stock > 0);
-  const best = [...available].sort((a, b) => b.sold_count - a.sold_count || b.is_featured - a.is_featured).slice(0, 10);
+  const best = [...available].sort((a, b) => b.sold_count - a.sold_count || b.is_featured - a.is_featured || a.sort - b.sort).slice(0, 10);
   const fresh = available.filter((p) => p.is_new).slice(0, 10);
 
   const promos = [
@@ -301,7 +301,7 @@ function vCatalog(r) {
   const { categories, products } = S.data;
   const cat = Number(r.q.get('cat')) || 0;
   const q = r.q.get('q') || '';
-  const sort = r.q.get('sort') || 'new';
+  const sort = r.q.get('sort') || 'rec';
   const onlyAvail = r.q.get('avail') === '1';
 
   const norm = (s) => s.toLowerCase().replace(/[ʻʼ`’']/g, '');
@@ -315,12 +315,13 @@ function vCatalog(r) {
   }
   const priceOf = (p) => p.price ?? Infinity;
   const sorters = {
+    rec: (a, b) => a.sort - b.sort || a.id - b.id,
     new: (a, b) => new Date(b.created_at) - new Date(a.created_at) || b.id - a.id,
     cheap: (a, b) => priceOf(a) - priceOf(b),
     expensive: (a, b) => (b.price ?? -1) - (a.price ?? -1),
-    popular: (a, b) => b.sold_count - a.sold_count || b.is_featured - a.is_featured,
+    popular: (a, b) => b.sold_count - a.sold_count || b.is_featured - a.is_featured || a.sort - b.sort,
   };
-  list.sort((a, b) => (b.stock > 0) - (a.stock > 0) || (sorters[sort] || sorters.new)(a, b));
+  list.sort((a, b) => (b.stock > 0) - (a.stock > 0) || (sorters[sort] || sorters.rec)(a, b));
 
   const link = (patch) => {
     const p = new URLSearchParams({ ...(cat && { cat }), ...(q && { q }), sort, ...(onlyAvail && { avail: '1' }), ...patch });
@@ -341,7 +342,7 @@ function vCatalog(r) {
     </div>
     <div class="sortbar">
       <select id="sortSel" aria-label="Saralash">
-        ${[['new', 'Avval yangilari'], ['popular', 'Ommaboplari'], ['cheap', 'Arzonroq'], ['expensive', 'Qimmatroq']].map(([v, t]) => `<option value="${v}"${sort === v ? ' selected' : ''}>${t}</option>`).join('')}
+        ${[['rec', 'Tavsiya etilgan'], ['new', 'Avval yangilari'], ['popular', 'Ommaboplari'], ['cheap', 'Arzonroq'], ['expensive', 'Qimmatroq']].map(([v, t]) => `<option value="${v}"${sort === v ? ' selected' : ''}>${t}</option>`).join('')}
       </select>
       <span class="grow"></span>
       <a class="chip plain${onlyAvail ? ' active' : ''}" style="height:36px;font-size:13px" href="${link({ avail: onlyAvail ? '' : '1' })}">Faqat mavjud</a>

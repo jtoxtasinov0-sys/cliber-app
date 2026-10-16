@@ -6,6 +6,7 @@
   "description": "CLIMBER — Telegram Mini App do'kon va admin panel (ombor bilan)",
   "scripts": {
     "dev": "node scripts/dev.mjs",
+    "start": "node scripts/dev.mjs",
     "db:setup": "node scripts/setup-db.mjs"
   },
   "engines": { "node": ">=20" },

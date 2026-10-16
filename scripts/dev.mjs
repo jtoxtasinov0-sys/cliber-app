@@ -1,4 +1,4 @@
-// Lokal ishga tushirish: npm run dev  ->  http://localhost:3000  va  /admin
+// Lokal ishga tushirish (npm run dev) va Render.com uchun server (npm start)
 import './env.mjs';
 import http from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
@@ -22,7 +22,8 @@ http.createServer(async (req, res) => {
   }
   try {
     const data = await readFile(file);
-    res.writeHead(200, { 'content-type': types[path.extname(file)] || 'application/octet-stream' }).end(data);
+    const cache = url.pathname.startsWith('/img/') ? 'public, max-age=604800' : 'no-cache';
+    res.writeHead(200, { 'content-type': types[path.extname(file)] || 'application/octet-stream', 'cache-control': cache }).end(data);
   } catch {
     res.writeHead(404).end('Not found');
   }

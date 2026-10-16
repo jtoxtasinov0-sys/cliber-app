@@ -6,6 +6,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { sql, SCHEMA } from '../lib/db.js';
 import { DEFAULT_SETTINGS } from '../lib/config.js';
+import { PRODUCT_ORDER, CATEGORY_ORDER, FEATURED } from './order.mjs';
 
 const seed = JSON.parse(readFileSync(path.join(root, 'data/seed.json'), 'utf8'));
 const reset = process.argv.includes('--reset');
@@ -20,7 +21,6 @@ const SIZES = {
   'Paltolar': ['M', 'L', 'XL', 'XXL'],
   'Jinsi va trikotajlar': ['30', '31', '32', '33', '34'],
 };
-const FEATURED = [14, 10, 6, 25, 5, 17, 26];
 const NEW = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 async function run() {
@@ -43,7 +43,7 @@ async function run() {
 
   const catIds = {};
   for (const [i, name] of seed.kategoriyalar.entries()) {
-    const [row] = await sql(`INSERT INTO categories(name, slug, sort) VALUES ($1, $2, $3) RETURNING id`, [name, slugify(name), i]);
+    const [row] = await sql(`INSERT INTO categories(name, slug, sort) VALUES ($1, $2, $3) RETURNING id`, [name, slugify(name), CATEGORY_ORDER.includes(name) ? CATEGORY_ORDER.indexOf(name) : i]);
     catIds[name] = row.id;
   }
 
@@ -52,9 +52,10 @@ async function run() {
     const desc = p.izoh?.startsWith('Kanaldagi izoh:') ? p.izoh.replace('Kanaldagi izoh:', '').trim() : null;
     const images = p.rasmlar.map((r) => '/img/products/' + path.basename(r));
     const [prod] = await sql(
-      `INSERT INTO products(id, name, category_id, brand, price, description, images, is_featured, is_new)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
-      [p.id, p.nomi, catIds[p.kategoriya], brand, p.narx, desc, JSON.stringify(images), FEATURED.includes(p.id), NEW.includes(p.id)]
+      `INSERT INTO products(id, name, category_id, brand, price, description, images, is_featured, is_new, sort)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id`,
+      [p.id, p.nomi, catIds[p.kategoriya], brand, p.narx, desc, JSON.stringify(images), FEATURED.includes(p.id), NEW.includes(p.id),
+        (PRODUCT_ORDER.indexOf(p.id) + 1) * 10 || 1000]
     );
     const sizes = SIZES[p.kategoriya] || ['Standart'];
     for (const [i, size] of sizes.entries()) {

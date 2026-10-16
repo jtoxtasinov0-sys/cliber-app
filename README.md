@@ -38,6 +38,21 @@ O'zbekiston bo'ylab yetkazib berish, **faqat karta orqali to'lov** (Uzcard / Hum
 3. Deploy qiling. So'ng admin panel → **Sozlamalar** → to'lov kartalarini kiriting va **Webhook o'rnatish** tugmasini bosing.
 4. @BotFather → `/mybots` → bot → **Bot Settings → Configure Mini App** → Vercel manzilini kiriting.
 
+## Render.com'ga joylash (muqobil)
+
+1. render.com → **New → Web Service** → GitHub'dan `cliber-app` reposini tanlang.
+2. Maydonlar: **Language** `Node`, **Branch** `main`, **Build Command** `npm install`, **Start Command** `npm start`, **Instance Type** `Free`.
+3. **Environment Variables** — yuqoridagi jadvaldagi qiymatlar (`DATABASE_URL`, `ADMIN_PASSWORD`, `AUTH_SECRET`, `BOT_TOKEN`, `ADMIN_CHAT_ID`).
+4. **Deploy Web Service** → `https://<nom>.onrender.com/admin` → Sozlamalar → **Webhook o'rnatish** (bot Render manziliga o'tadi).
+5. BotFather'da Mini App manzilini Render manziliga almashtiring.
+
+> Bepul Render 15 daqiqa ishlatilmasa uxlaydi — birinchi ochilish ~50 soniya. Vercel'da bunday kechikish yo'q.
+
+## Mahsulotlar tartibi
+
+Admin → **Mahsulotlar** jadvalidagi **Tartib** ustuniga raqam yozing va Enter bosing: kichik raqam ilovada birinchi chiqadi
+(masalan 1, 2, 3... yoki 10, 20, 30 — orasiga keyin mahsulot qo'shish oson). Kategoriyalar tartibi — **Kategoriyalar** bo'limida.
+
 ## Lokal ishga tushirish
 
 ```bash

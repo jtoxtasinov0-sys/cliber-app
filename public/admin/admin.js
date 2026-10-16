@@ -373,6 +373,7 @@ async function pProducts(main) {
     <div class="toolbar">
       <div class="search">${icon('search', 'sm')}<input class="input" id="pq" placeholder="Nomi yoki brend" /></div>
       <select class="input" id="pc" style="width:auto"><option value="">Barcha kategoriyalar</option>${cats.map((c) => `<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select>
+      <span class="muted" style="font-size:12.5px">Tartib: kichik raqam — ilovada birinchi</span>
       <select class="input" id="pf" style="width:auto"><option value="">Barcha holatlar</option><option value="active">Sotuvda</option><option value="hidden">Yashirin</option><option value="noprice">Narxsiz</option><option value="out">Tugagan</option></select>
     </div>
     <div class="panel"><div class="table-wrap" id="ptable"></div></div>`;
@@ -383,18 +384,38 @@ async function pProducts(main) {
       return (!q || `${p.name} ${p.brand || ''}`.toLowerCase().includes(q)) && (!st.cat || p.category_id === Number(st.cat)) &&
         (!st.flag || (st.flag === 'active' && p.is_active) || (st.flag === 'hidden' && !p.is_active) || (st.flag === 'noprice' && !p.price) || (st.flag === 'out' && stock <= 0));
     });
-    main.querySelector('#ptable').innerHTML = `<table class="t"><thead><tr><th>Mahsulot</th><th>Kategoriya</th><th class="r">Narx</th><th>O'lchamlar va qoldiq</th><th class="r">Jami</th><th>Holat</th></tr></thead><tbody>
+    main.querySelector('#ptable').innerHTML = `<table class="t"><thead><tr><th title="Kichik raqam — ilovada yuqorida">Tartib</th><th>Mahsulot</th><th>Kategoriya</th><th class="r">Narx</th><th>O'lchamlar va qoldiq</th><th class="r">Jami</th><th>Holat</th></tr></thead><tbody>
       ${rows.length ? rows.map((p) => {
         const stock = p.variants.reduce((s, v) => s + v.stock, 0);
         return `<tr class="click" data-id="${p.id}">
+          <td><input class="input num sortin" type="number" min="0" step="1" value="${p.sort}" data-sort="${p.id}" title="Enter yoki boshqa joyni bosing — saqlanadi" /></td>
           <td><div class="pname"><img class="thumb" src="${esc(p.images[0] || '/img/brand/logo_512.png')}" alt="" loading="lazy" /><div><b>${esc(p.name)}</b><small>#${p.id}${p.brand ? ' · ' + esc(p.brand) : ''}</small></div></div></td>
           <td>${esc(p.category_name || '—')}</td>
           <td class="r nowrap">${p.price ? `<b>${money(p.price)}</b>${p.old_price ? `<div class="muted" style="text-decoration:line-through;font-size:12px">${money(p.old_price)}</div>` : ''}` : '<span class="pill amber">Narxsiz</span>'}</td>
           <td><div style="display:flex;gap:4px;flex-wrap:wrap">${p.variants.map((v) => `<span class="pill ${v.stock <= 0 ? 'red' : v.stock <= v.low_stock ? 'amber' : ''}" title="${esc(v.sku || '')}">${esc(v.size)}: ${v.stock}</span>`).join('')}</div></td>
           <td class="r"><span class="stockbadge ${stock <= 0 ? 'out' : ''}">${stock}</span></td>
           <td><div style="display:flex;gap:4px;flex-wrap:wrap">${p.is_active ? '<span class="pill green">Sotuvda</span>' : '<span class="pill">Yashirin</span>'}${p.is_featured ? '<span class="pill gold">Top</span>' : ''}${p.is_new ? '<span class="pill blue">Yangi</span>' : ''}</div></td></tr>`;
-      }).join('') : `<tr><td colspan="6" class="empty-row">Mahsulot topilmadi</td></tr>`}</tbody></table>`;
-    main.querySelectorAll('[data-id]').forEach((r) => (r.onclick = () => productModal(list.find((p) => p.id === Number(r.dataset.id)), () => pProducts(main))));
+      }).join('') : `<tr><td colspan="7" class="empty-row">Mahsulot topilmadi</td></tr>`}</tbody></table>`;
+    main.querySelectorAll('[data-id]').forEach((r) => (r.onclick = (e) => {
+      if (e.target.closest('.sortin')) return;
+      productModal(list.find((p) => p.id === Number(r.dataset.id)), () => pProducts(main));
+    }));
+    main.querySelectorAll('.sortin').forEach((inp) => {
+      inp.onkeydown = (e) => e.key === 'Enter' && inp.blur();
+      inp.onchange = async () => {
+        const p = list.find((x) => x.id === Number(inp.dataset.sort));
+        try {
+          const r = await api(`admin/products/${p.id}/sort`, { method: 'PATCH', body: { sort: inp.value } });
+          p.sort = r.sort;
+          list.sort((a, b) => a.sort - b.sort || a.id - b.id);
+          toast(`Tartib saqlandi: ${r.sort}`);
+          render();
+        } catch (err) {
+          toast(err.message, true);
+          inp.value = p.sort;
+        }
+      };
+    });
   };
   main.querySelector('#pq').oninput = (e) => { st.q = e.target.value; render(); };
   main.querySelector('#pc').onchange = (e) => { st.cat = e.target.value; render(); };
@@ -419,6 +440,7 @@ function productModal(p, onSaved) {
         <label class="field"><span>Brend</span><input class="input" name="brand" value="${esc(p?.brand || '')}" placeholder="Masalan: Gratude" /></label>
         <label class="field"><span>Narx (so'm)</span><input class="input" name="price" type="number" min="0" step="1000" value="${p?.price ?? ''}" placeholder="Bo'sh = narxi so'rov bo'yicha" /></label>
         <label class="field"><span>Eski narx (chegirma uchun)</span><input class="input" name="old_price" type="number" min="0" step="1000" value="${p?.old_price ?? ''}" placeholder="Ixtiyoriy" /></label>
+        <label class="field"><span>Tartib raqami (kichigi — yuqorida)</span><input class="input" name="sort" type="number" min="0" value="${p?.sort ?? ''}" placeholder="Bo'sh = ro'yxat oxiriga" /></label>
       </div>
       <label class="field" style="margin-top:14px"><span>Tavsif</span><textarea class="input" name="description" placeholder="Mato, rang, o'lcham bo'yicha maslahat...">${esc(p?.description || '')}</textarea></label>
 
@@ -512,7 +534,7 @@ function productModal(p, onSaved) {
     const body = {
       name: fd.get('name'), category_id: fd.get('category_id'), brand: fd.get('brand'),
       price: fd.get('price'), old_price: fd.get('old_price'), description: fd.get('description'),
-      images: st.images, variants: st.variants,
+      sort: fd.get('sort'), images: st.images, variants: st.variants,
       is_active: f.is_active.checked, is_featured: f.is_featured.checked, is_new: f.is_new.checked,
     };
     await api(p ? 'admin/products/' + p.id : 'admin/products', { method: p ? 'PUT' : 'POST', body });

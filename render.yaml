@@ -1,0 +1,22 @@
+# Render.com Blueprint: New → Blueprint → shu repo
+services:
+  - type: web
+    name: climber-shop
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/bootstrap
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: BOT_TOKEN
+        sync: false
+      - key: ADMIN_CHAT_ID
+        sync: false
+      - key: PAYMENT_PROVIDER_TOKEN
+        sync: false
