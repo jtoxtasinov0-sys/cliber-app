@@ -1092,6 +1092,12 @@ async function pSettings(main) {
           </div>
           <p class="muted" style="font-size:12.5px">Bu qiymatlar Vercel → Project → Settings → Environment Variables bo'limida kiritiladi, keyin qayta deploy qilinadi.</p>
           <button class="btn btn-dark" id="wh" ${env.bot ? '' : 'disabled'}>${icon('refresh', 'sm')} Webhook va menyu tugmasini o'rnatish</button>
+          <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:16px">
+            <img src="/img/brand/bot-avatar.jpg" alt="" style="width:44px;height:44px;border-radius:50%" />
+            <label class="field" style="flex:1;min-width:140px"><span>Bot nomi</span><input class="input" id="bname" value="Climber" maxlength="64" /></label>
+            <button class="btn btn-dark" id="bprof" ${env.bot ? '' : 'disabled'}>${icon('refresh', 'sm')} Nom va logoni yangilash</button>
+          </div>
+          <p class="muted" style="font-size:12.5px">Telegram'dagi bot nomi va rasmi — "Ekranga qo'shish" yorlig'i ham shulardan olinadi. Keyin eski yorliqni o'chirib, qayta qo'shing.</p>
         </div></div>
       </div>
 
@@ -1125,6 +1131,10 @@ async function pSettings(main) {
   main.querySelector('#wh').onclick = (e) => withBtn(e.currentTarget, async () => {
     const r = await api('admin/telegram/webhook', { method: 'POST' });
     toast("Webhook o'rnatildi: " + r.url);
+  });
+  main.querySelector('#bprof').onclick = (e) => withBtn(e.currentTarget, async () => {
+    const r = await api('admin/telegram/profile', { method: 'POST', body: { name: main.querySelector('#bname').value } });
+    toast(`Bot nomi "${r.name}" va logo yangilandi`);
   });
 
   main.querySelector('#ssave').onclick = (e) => withBtn(e.currentTarget, async () => {
